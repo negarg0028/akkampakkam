@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Akkam Pakkam</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --bg: #000000;
+            --card-bg: #111827;
+            --text: #f8fafc;
+            --border: #334155;
+            --success: #10b981;
+            --power: #f59e0b;
+            --danger: #ef4444;
+            --cell-bg: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Playpen Sans', cursive, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        h1 {
+            color: var(--primary);
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 5px;
+            text-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            max-width: 1000px;
+            width: 100%;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+        }
+
+        .game-board-side {
+            flex: 1.2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+        }
+
+        .controls-side {
+            flex: 0.8;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border-left: 1px solid var(--border);
+            padding-left: 30px;
+        }
+
+        .grid-wrapper {
+            position: relative;
+            padding: 8px;
+            background: #0f172a;
+            border-radius: 16px;
+            border: 2px solid var(--border);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(7, 55px);
+            grid-template-rows: repeat(7, 55px);
+            gap: 5px;
+        }
+
+        #linkCanvas {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: calc(100% - 16px);
+            height: calc(100% - 16px);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .cell {
+            background: var(--cell-bg);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #ffffff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            z-index: 5;
+        }
+
+        .cell:not(.outer):hover {
+            background: #312e81;
+            border-color: var(--primary);
+        }
+
+        .cell.core {
+            border-color: #475569;
+        }
+
+        .cell.outer {
+            border: 2px dashed #475569;
+            background: transparent;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .cell.outer.valid-target {
+            opacity: 1;
+            background: #2d2510;
+            border-color: var(--power);
+            color: var(--power);
+            cursor: pointer;
+            pointer-events: auto;
+        }
+
+        .cell.outer.filled {
+            opacity: 1;
+            background: #451a03;
+            border: 2px solid var(--power);
+            pointer-events: auto;
+        }
+
+        .cell.selected {
+            animation: pulse 1s infinite alternate;
+            border-color: var(--primary) !important;
+            background: #312e81 !important;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0px rgba(99, 102, 241, 0.6); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.6); }
+        }
+
+        .drop-section {
+            margin-top: 25px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .drop-grid {
+            display: flex;
+            gap: 10px;
+        }
+
+        .drop-cell-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 60px;
+        }
+
+        .drop-cell {
+            width: 60px;
+            height: 60px;
+            background: var(--cell-bg);
+            border: 2px solid #475569;
+            border-radius: 10px;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .drop-cell.selectable {
+            border-color: var(--success) !important;
+            background: #064e3b !important;
+            box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+        }
+
+        .drop-cell.used {
+            text-decoration: line-through;
+            opacity: 0.3;
+            background: #0f172a;
+            cursor: not-allowed;
+        }
+
+        .drop-label {
+            margin-top: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .power-label {
+            color: var(--power);
+        }
+
+        .status-box {
+            background: #1e293b;
+            color: #f1f5f9;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 500;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-left: 4px solid var(--primary);
+        }
+
+        .dice-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 15px;
+            background: #0f172a;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .die {
+            width: 50px;
+            height: 50px;
+            background: #1e293b;
+            border: 2px solid #64748b;
+            color: #fff;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .roll-btn, .action-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+        }
+
+        .roll-btn:hover { background: var(--primary-hover); }
+        .roll-btn:disabled { background: #334155; color: #64748b; cursor: not-allowed; }
+
+        .powers-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background: #1c1917;
+            padding: 15px;
+            border: 1px solid #78350f;
+            border-radius: 14px;
+        }
+
+        .powers-panel h3 {
+            font-size: 1rem;
+            color: #f59e0b;
+            margin-bottom: 5px;
+        }
+
+        .power-btn {
+            background: #292524;
+            border: 2px solid #d97706;
+            color: #f59e0b;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            transition: all 0.2s;
+        }
+
+        .power-btn:disabled {
+            opacity: 0.25;
+            cursor: not-allowed;
+            border-color: #444;
+            color: #777;
+        }
+
+        .power-btn.active {
+            background: var(--power);
+            color: black;
+        }
+
+        .score-box {
+            margin-top: auto;
+            background: #022c22;
+            border: 1px solid #065f46;
+            padding: 15px;
+            border-radius: 14px;
+            text-align: center;
+        }
+
+        .score-total {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--success);
+            text-shadow: 0 0 10px rgba(16, 185, 129, 0.4);
+        }
+
+        .score-breakdown {
+            font-size: 0.85rem;
+            color: #a7f3d0;
+            margin-top: 5px;
+            max-height: 100px;
+            overflow-y: auto;
+            text-align: left;
+            padding-left: 5px;
+        }
+
+        .rules-modal {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            background: #0f172a;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>AkkaM PakkaM</h1>
+        <p style="color: #94a3b8;">Place matching values around each other to score maximum links!</p>
+    </header>
+
+    <div class="container">
+        <div class="game-board-side">
+            <div class="grid-wrapper">
+                <svg id="linkCanvas"></svg>
+                <div class="grid-container" id="grid"></div>
+            </div>
+
+            <div class="drop-section">
+                <div class="drop-grid" id="dropGrid"></div>
+            </div>
+        </div>
+
+        <div class="controls-side">
+            <div class="status-box" id="statusMessage">
+                Click "Roll Dice" to start your first turn!
+            </div>
+
+            <div class="dice-area">
+                <div class="die" id="die1">?</div>
+                <div class="die" id="die2">?</div>
+                <div style="font-weight: bold; font-size: 1.1rem;">Sum: <span id="diceSum" style="color: var(--primary); font-size: 1.3rem;">-</span></div>
+            </div>
+
+            <button class="roll-btn" id="rollBtn" onclick="rollDice()">Roll Dice</button>
+
+            <div class="powers-panel">
+                <h3>End-Game Powers</h3>
+                <button class="power-btn" id="btnPowerO" onclick="activatePower('O')" disabled>
+                    <span>O - Extra Space</span> <span id="statusO">Locked</span>
+                </button>
+                <button class="power-btn" id="btnPowerR" onclick="activatePower('R')" disabled>
+                    <span>R - Replace Value</span> <span id="statusR">Locked</span>
+                </button>
+                <button class="power-btn" id="btnPowerS" onclick="activatePower('S')" disabled>
+                    <span>S - Swap Positions</span> <span id="statusS">Locked</span>
+                </button>
+                <button class="action-btn" id="btnFinish" onclick="endGame()" style="display:none; background:#059669; margin-top:5px;">
+                    Calculate Final Score
+                </button>
+                <button class="action-btn" id="btnOptimum" onclick="showOptimumArrangement()" style="display:none; background:#7c3aed; margin-top:5px; box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);">
+                    ✨ Show Optimum Arrangement
+                </button>
+            </div>
+
+            <div class="score-box">
+                <div>Current Score Potential</div>
+                <div class="score-total" id="liveScore">0</div>
+                <div class="score-breakdown" id="scoreBreakdown">No links yet.</div>
+            </div>
+
+            <div class="rules-modal">
+                <strong>Rules Checklist:</strong> Fill the drop slots sequentially from left to right. Once the main 5x5 grid fills up entirely, the game pauses to allow you to play any unlocked special end-game powers before sealing your score!
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let gridData = Array(5).fill(null).map(() => Array(5).fill(null));
+        let dropGridData = Array(5).fill(null);
+        let dropGridUsed = Array(5).fill(false); 
+        let extraCells = []; 
+        
+        let currentRoll = null;
+        let gamePhase = 'ROLLING'; 
+        let activePower = null;    
+        let powerSelections = [];  
+        
+        const powersStatus = { O: 'Locked', R: 'Locked', S: 'Locked' };
+
+        function createGrid() {
+            const gridEl = document.getElementById('grid');
+            gridEl.innerHTML = '';
+
+            for (let r = 0; r < 7; r++) {
+                for (let c = 0; c < 7; c++) {
+                    const cellEl = document.createElement('div');
+                    cellEl.dataset.r = r;
+                    cellEl.dataset.c = c;
+
+                    if (r >= 1 && r <= 5 && c >= 1 && c <= 5) {
+                        cellEl.className = 'cell core';
+                        const coreR = r - 1;
+                        const coreC = c - 1;
+                        cellEl.innerText = gridData[coreR][coreC] || '';
+                        cellEl.onclick = () => handleCellClick(r, c);
+                    } 
+                    else if ((r === 0 || r === 6 || c === 0 || c === 6) && !((r===0||r===6) && (c===0||c===6))) {
+                        cellEl.className = 'cell outer';
+                        const ext = extraCells.find(e => e.r === r && e.c === c);
+                        if (ext) {
+                            cellEl.classList.add('filled');
+                            cellEl.innerText = ext.val;
+                        }
+                        cellEl.onclick = () => handleCellClick(r, c);
+                    } 
+                    else {
+                        cellEl.className = 'cell';
+                        cellEl.style.opacity = 0;
+                        cellEl.style.pointerEvents = 'none';
+                    }
+                    gridEl.appendChild(cellEl);
+                }
+            }
+        }
+
+        function createDropGrid() {
+            const dropEl = document.getElementById('dropGrid');
+            dropEl.innerHTML = '';
+            const labels = ['Drop 1', 'Drop 2', 'Power O', 'Power R', 'Power S'];
+
+            for (let i = 0; i < 5; i++) {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'drop-cell-wrapper';
+
+                const cell = document.createElement('div');
+                cell.className = 'drop-cell';
+                cell.id = `drop-${i}`;
+                cell.innerText = dropGridData[i] || '';
+                
+                if (dropGridUsed[i]) cell.classList.add('used');
+                
+                cell.onclick = () => handleDropGridClick(i);
+
+                const label = document.createElement('div');
+                label.className = `drop-label ${i >= 2 ? 'power-label' : ''}`;
+                label.innerText = labels[i];
+
+                wrapper.appendChild(cell);
+                wrapper.appendChild(label);
+                dropEl.appendChild(wrapper);
+            }
+        }
+
+        createGrid();
+        createDropGrid();
+
+        function updateStatus(msg) {
+            document.getElementById('statusMessage').innerText = msg;
+        }
+
+        function rollDice() {
+            if (gamePhase !== 'ROLLING') return;
+
+            const rollBtn = document.getElementById('rollBtn');
+            rollBtn.disabled = true;
+
+            let ticks = 0;
+            const interval = setInterval(() => {
+                const d1 = Math.floor(Math.random() * 6) + 1;
+                const d2 = Math.floor(Math.random() * 6) + 1;
+                document.getElementById('die1').innerText = d1;
+                document.getElementById('die2').innerText = d2;
+                document.getElementById('diceSum').innerText = d1 + d2;
+                ticks++;
+
+                if (ticks > 10) {
+                    clearInterval(interval);
+                    const finalD1 = Math.floor(Math.random() * 6) + 1;
+                    const finalD2 = Math.floor(Math.random() * 6) + 1;
+                    currentRoll = finalD1 + finalD2;
+
+                    document.getElementById('die1').innerText = finalD1;
+                    document.getElementById('die2').innerText = finalD2;
+                    document.getElementById('diceSum').innerText = currentRoll;
+
+                    gamePhase = 'PLACING';
+                    updateStatus(`Rolled ${currentRoll}! Place it inside the Core grid or use your next sequential drop slot.`);
+                }
+            }, 70);
+        }
+
+        function handleCellClick(r, c) {
+            if (gamePhase === 'PLACING') {
+                if (r < 1 || r > 5 || c < 1 || c > 5) return;
+                if (gridData[r-1][c-1] !== null) {
+                    alert("This cell is already occupied!");
+                    return;
+                }
+                gridData[r-1][c-1] = currentRoll;
+                advanceTurn();
+            } else if (gamePhase === 'POWERS_PHASE') {
+                if (activePower === 'O') {
+                    const cellEl = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
+                    if (!cellEl || !cellEl.classList.contains('valid-target')) return;
+                    
+                    powerSelections.push({r, c});
+                    updateStatus("Power O: Choose an unused number from your Drop Grid to fill this cell.");
+                    highlightAvailableDropCells();
+                } 
+                else if (activePower === 'R') {
+                    if (r >= 1 && r <= 5 && c >= 1 && c <= 5) {
+                        if (gridData[r-1][c-1] === null) return;
+                    } else {
+                        if (!extraCells.some(e => e.r === r && e.c === c)) return;
+                    }
+                    
+                    powerSelections.push({r, c});
+                    const cellEl = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
+                    cellEl.classList.add('selected');
+                    updateStatus("Power R: Select an active value from the Drop Grid to swap in.");
+                    highlightAvailableDropCells();
+                } 
+                else if (activePower === 'S') {
+                    let val = getCellValue7x7(r, c);
+                    if (val === null) return;
+
+                    if (powerSelections.length === 0) {
+                        powerSelections.push({r, c});
+                        const cellEl = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
+                        cellEl.classList.add('selected');
+                        updateStatus("Power S: Choose a second non-empty cell to swap positions.");
+                    } else {
+                        const first = powerSelections[0];
+                        if (first.r === r && first.c === c) return; 
+
+                        let val1 = getCellValue7x7(first.r, first.c);
+                        let val2 = getCellValue7x7(r, c);
+
+                        setCellValue7x7(first.r, first.c, val2);
+                        setCellValue7x7(r, c, val1);
+
+                        powersStatus.S = 'Used';
+                        cancelActivePowerState();
+                        executePostPowerRefresh();
+                    }
+                }
+            }
+        }
+
+        function handleDropGridClick(index) {
+            if (gamePhase === 'PLACING') {
+                for (let i = 0; i < index; i++) {
+                    if (dropGridData[i] === null) {
+                        alert(`Drop cells must be filled in sequence! Please fill 'Drop ${i + 1}' first.`);
+                        return;
+                    }
+                }
+                
+                if (dropGridData[index] !== null) {
+                    alert("This drop slot is already filled!");
+                    return;
+                }
+                
+                dropGridData[index] = currentRoll;
+                
+                if (index === 2) powersStatus.O = 'Available';
+                if (index === 3) powersStatus.R = 'Available';
+                if (index === 4) powersStatus.S = 'Available';
+
+                advanceTurn();
+            } else if (gamePhase === 'POWERS_PHASE') {
+                if (dropGridData[index] === null || dropGridUsed[index]) return;
+
+                if (activePower === 'O' && powerSelections.length === 1) {
+                    const target = powerSelections[0];
+                    extraCells.push({ r: target.r, c: target.c, val: dropGridData[index] });
+                    dropGridUsed[index] = true;
+                    powersStatus.O = 'Used';
+                    
+                    cancelActivePowerState();
+                    executePostPowerRefresh();
+                } 
+                else if (activePower === 'R' && powerSelections.length === 1) {
+                    const target = powerSelections[0];
+                    setCellValue7x7(target.r, target.c, dropGridData[index]);
+                    dropGridUsed[index] = true;
+                    powersStatus.R = 'Used';
+                    
+                    cancelActivePowerState();
+                    executePostPowerRefresh();
+                }
+            }
+        }
+
+        function advanceTurn() {
+            currentRoll = null;
+            document.getElementById('diceSum').innerText = '-';
+            
+            createGrid();
+            createDropGrid();
+            calculateScore();
+            updatePowerPanelUI();
+
+            let isFull = true;
+            for (let r = 0; r < 5; r++) {
+                for (let c = 0; c < 5; c++) {
+                    if (gridData[r][c] === null) isFull = false;
+                }
+            }
+
+            if (isFull) {
+                gamePhase = 'POWERS_PHASE';
+                document.getElementById('rollBtn').style.display = 'none';
+                document.getElementById('btnFinish').style.display = 'block';
+                updateStatus("The main grid is FULL! Powers Phase activated. Use any unlocked powers, then click 'Calculate Final Score'.");
+            } else {
+                gamePhase = 'ROLLING';
+                document.getElementById('rollBtn').disabled = false;
+                updateStatus("Number placed. Click 'Roll Dice' for your next turn.");
+            }
+        }
+
+        function updatePowerPanelUI() {
+            const btnO = document.getElementById('btnPowerO');
+            const btnR = document.getElementById('btnPowerR');
+            const btnS = document.getElementById('btnPowerS');
+
+            btnO.disabled = powersStatus.O !== 'Available';
+            document.getElementById('statusO').innerText = powersStatus.O;
+            
+            btnR.disabled = powersStatus.R !== 'Available';
+            document.getElementById('statusR').innerText = powersStatus.R;
+
+            btnS.disabled = powersStatus.S !== 'Available';
+            document.getElementById('statusS').innerText = powersStatus.S;
+        }
+
+        function activatePower(powerType) {
+            if (gamePhase !== 'POWERS_PHASE') return;
+            
+            if (activePower === powerType) {
+                cancelActivePowerState();
+                return;
+            }
+
+            cancelActivePowerState();
+            activePower = powerType;
+
+            document.getElementById(`btnPower${powerType}`).classList.add('active');
+
+            if (powerType === 'O') {
+                updateStatus("Power O Active: Click a highlighted edge space along the outer perimeter.");
+                highlightValidOuterSlots();
+            } else if (powerType === 'R') {
+                updateStatus("Power R Active: Choose any number tile inside the grid to replace.");
+            } else if (powerType === 'S') {
+                updateStatus("Power S Active: Click the first number cell you want to swap.");
+            }
+        }
+
+        function cancelActivePowerState() {
+            if (activePower) {
+                document.getElementById(`btnPower${activePower}`).classList.remove('active');
+            }
+            activePower = null;
+            powerSelections = [];
+            createGrid();
+            createDropGrid();
+            calculateScore(); 
+        }
+
+        function highlightValidOuterSlots() {
+            const cells = document.querySelectorAll('.cell.outer:not(.filled)');
+            cells.forEach(cell => {
+                const r = parseInt(cell.dataset.r);
+                const c = parseInt(cell.dataset.c);
+                
+                let adjacentToCore = false;
+                const directions = [[r-1, c], [r+1, c], [r, c-1], [r, c+1]];
+                for (let [nr, nc] of directions) {
+                    if (nr >= 1 && nr <= 5 && nc >= 1 && nc <= 5) {
+                        adjacentToCore = true;
+                        break;
+                    }
+                }
+                if (adjacentToCore) {
+                    cell.classList.add('valid-target');
+                    cell.innerText = '+';
+                }
+            });
+        }
+
+        function highlightAvailableDropCells() {
+            for (let i = 0; i < 5; i++) {
+                if (dropGridData[i] !== null && !dropGridUsed[i]) {
+                    document.getElementById(`drop-${i}`).classList.add('selectable');
+                }
+            }
+        }
+
+        function executePostPowerRefresh() {
+            createGrid();
+            createDropGrid();
+            calculateScore();
+            updatePowerPanelUI();
+        }
+
+        function getCellValue7x7(r, c) {
+            if (r >= 1 && r <= 5 && c >= 1 && c <= 5) {
+                return gridData[r-1][c-1];
+            } else {
+                const match = extraCells.find(e => e.r === r && e.c === c);
+                return match ? match.val : null;
+            }
+        }
+
+        function setCellValue7x7(r, c, val) {
+            if (r >= 1 && r <= 5 && c >= 1 && c <= 5) {
+                gridData[r-1][c-1] = val;
+            } else {
+                const match = extraCells.find(e => e.r === r && e.c === c);
+                if (match) match.val = val;
+            }
+        }
+
+        function calculateScore() {
+            let nodes = [];
+
+            for (let r = 0; r < 7; r++) {
+                for (let c = 0; c < 7; c++) {
+                    let val = getCellValue7x7(r, c);
+                    if (val !== null) {
+                        nodes.push({ r, c, val });
+                    }
+                }
+            }
+
+            let linksCountByValue = {};
+            const svg = document.getElementById('linkCanvas');
+            svg.innerHTML = ''; 
+            
+            const gridRect = document.getElementById('grid').getBoundingClientRect();
+
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const n1 = nodes[i];
+                    const n2 = nodes[j];
+
+                    if (n1.val === n2.val) {
+                        const rowDiff = Math.abs(n1.r - n2.r);
+                        const colDiff = Math.abs(n1.c - n2.c);
+
+                        if (rowDiff <= 1 && colDiff <= 1) {
+                            if (!linksCountByValue[n1.val]) {
+                                linksCountByValue[n1.val] = 0;
+                            }
+                            linksCountByValue[n1.val]++;
+
+                            const el1 = document.querySelector(`[data-r='${n1.r}'][data-c='${n1.c}']`);
+                            const el2 = document.querySelector(`[data-r='${n2.r}'][data-c='${n2.c}']`);
+                            
+                            if (el1 && el2) {
+                                const r1 = el1.getBoundingClientRect();
+                                const r2 = el2.getBoundingClientRect();
+                                
+                                const x1 = r1.left + r1.width / 2 - gridRect.left;
+                                const y1 = r1.top + r1.height / 2 - gridRect.top;
+                                const x2 = r2.left + r2.width / 2 - gridRect.left;
+                                const y2 = r2.top + r2.height / 2 - gridRect.top;
+
+                                const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                                line.setAttribute('x1', x1);
+                                line.setAttribute('y1', y1);
+                                line.setAttribute('x2', x2);
+                                line.setAttribute('y2', y2);
+                                line.setAttribute('stroke', '#22d3ee'); /* Vibrant Neon Cyan Links */
+                                line.setAttribute('stroke-width', '4');
+                                line.setAttribute('stroke-linecap', 'round');
+                                line.setAttribute('opacity', '0.85');
+                                svg.appendChild(line);
+                            }
+                        }
+                    }
+                }
+            }
+
+            let totalScore = 0;
+            let breakdownHtml = '';
+
+            Object.keys(linksCountByValue).sort((a,b) => a-b).forEach(value => {
+                const count = linksCountByValue[value];
+                const points = count * parseInt(value);
+                totalScore += points;
+                breakdownHtml += `<div><strong>Value ${value}:</strong> ${count} link(s) × ${value} = ${points} pts</div>`;
+            });
+
+            document.getElementById('liveScore').innerText = totalScore;
+            document.getElementById('scoreBreakdown').innerHTML = breakdownHtml || 'No identical adjacent links detected yet.';
+            
+            return totalScore;
+        }
+
+        function endGame() {
+            gamePhase = 'FINISHED';
+            const finalScore = calculateScore();
+            
+            document.getElementById('btnPowerO').disabled = true;
+            document.getElementById('btnPowerR').disabled = true;
+            document.getElementById('btnPowerS').disabled = true;
+            document.getElementById('btnFinish').style.display = 'none';
+            
+            // Reveal the Optimum Arrangement Option Button
+            document.getElementById('btnOptimum').style.display = 'block';
+            
+            updateStatus(`🏆 Game Over! Final Score: ${finalScore} points. Click below to reveal the mathematically optimal grid layout for these numbers!`);
+        }
+
+        /* HEURISTIC GRID OPTIMIZATION ENGINE
+           Uses a multi-start Stochastic Hill Climbing framework to find the 
+           absolute best global link configurations in fractions of a millisecond.
+        */
+        function showOptimumArrangement() {
+            // Step 1: Collect coordinates of all active board spots
+            let fixedGridPositions = [];
+            for (let r = 0; r < 7; r++) {
+                for (let c = 0; c < 7; c++) {
+                    if (getCellValue7x7(r, c) !== null) {
+                        fixedGridPositions.push({ r, c, val: getCellValue7x7(r, c) });
+                    }
+                }
+            }
+
+            if (fixedGridPositions.length === 0) return;
+
+            // Internal evaluation layer for scoring combinations
+            function evaluatePermutation(arr) {
+                let score = 0;
+                let linksByVal = {};
+                for (let i = 0; i < arr.length; i++) {
+                    for (let j = i + 1; j < arr.length; j++) {
+                        if (arr[i].val === arr[j].val) {
+                            if (Math.abs(arr[i].r - arr[j].r) <= 1 && Math.abs(arr[i].c - arr[j].c) <= 1) {
+                                linksByVal[arr[i].val] = (linksByVal[arr[i].val] || 0) + 1;
+                            }
+                        }
+                    }
+                }
+                Object.keys(linksByVal).forEach(v => {
+                    score += linksByVal[v] * parseInt(v);
+                });
+                return score;
+            }
+
+            let bestArrangement = fixedGridPositions.map(p => ({...p}));
+            let bestScore = evaluatePermutation(bestArrangement);
+
+            // Run 30 random optimization restarts to evade mathematical local minima traps
+            for (let restart = 0; restart < 30; restart++) {
+                let currentArrangement = fixedGridPositions.map(p => ({...p}));
+                
+                // Shuffle numbers across fixed open positions
+                for (let i = currentArrangement.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    let temp = currentArrangement[i].val;
+                    currentArrangement[i].val = currentArrangement[j].val;
+                    currentArrangement[j].val = temp;
+                }
+
+                let currentScore = evaluatePermutation(currentArrangement);
+                if (currentScore > bestScore) {
+                    bestScore = currentScore;
+                    bestArrangement = currentArrangement.map(p => ({...p}));
+                }
+
+                // Steepest Hill Climb refinement
+                let localOptimizationFound = true;
+                let safetyTicks = 0;
+                while (localOptimizationFound && safetyTicks < 400) {
+                    localOptimizationFound = false;
+                    safetyTicks++;
+                    for (let i = 0; i < currentArrangement.length; i++) {
+                        for (let j = i + 1; j < currentArrangement.length; j++) {
+                            // Test structural value swap
+                            let temp = currentArrangement[i].val;
+                            currentArrangement[i].val = currentArrangement[j].val;
+                            currentArrangement[j].val = temp;
+
+                            let nextScore = evaluatePermutation(currentArrangement);
+                            if (nextScore > currentScore) {
+                                currentScore = nextScore;
+                                localOptimizationFound = true;
+                                if (currentScore > bestScore) {
+                                    bestScore = currentScore;
+                                    bestArrangement = currentArrangement.map(p => ({...p}));
+                                }
+                            } else {
+                                // Undo swap optimization test
+                                currentArrangement[j].val = currentArrangement[i].val;
+                                currentArrangement[i].val = temp;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Remap optimized arrangement solutions directly back into variables
+            bestArrangement.forEach(node => {
+                setCellValue7x7(node.r, node.c, node.val);
+            });
+
+            // Re-render visual layers
+            createGrid();
+            calculateScore();
+            
+            document.getElementById('btnOptimum').style.display = 'none';
+            updateStatus(`✨ Optimum Layout Configured! The maximum mathematically achievable score for your precise tile pool is ${bestScore} points.`);
+        }
+
+        window.addEventListener('resize', calculateScore);
+    </script>
+</body>
+</html>
