@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Akkam Pakkam</title>
+    <title>AkkaM PakkaM</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
@@ -20,6 +20,7 @@
             --power: #f59e0b;
             --danger: #ef4444;
             --cell-bg: #1e293b;
+            --optimum: #7c3aed;
         }
 
         * {
@@ -55,7 +56,7 @@
         .container {
             display: flex;
             gap: 30px;
-            max-width: 1000px;
+            max-width: 1400px;
             width: 100%;
             background: var(--card-bg);
             padding: 25px;
@@ -65,20 +66,39 @@
         }
 
         .game-board-side {
-            flex: 1.2;
+            flex: 2;
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 30px;
+            position: relative;
+            flex-wrap: wrap;
+        }
+
+        .board-panel-wrapper {
             display: flex;
             flex-direction: column;
             align-items: center;
-            position: relative;
+            flex: 1;
+            min-width: 420px;
+        }
+
+        #pakkamWrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 160px;
         }
 
         .controls-side {
-            flex: 0.8;
+            flex: 0.7;
             display: flex;
             flex-direction: column;
             gap: 20px;
             border-left: 1px solid var(--border);
             padding-left: 30px;
+            min-width: 280px;
         }
 
         .grid-wrapper {
@@ -96,7 +116,7 @@
             gap: 5px;
         }
 
-        #linkCanvas {
+        .linkCanvasClass {
             position: absolute;
             top: 8px;
             left: 8px;
@@ -107,6 +127,8 @@
         }
 
         .cell {
+            width: 55px;
+            height: 55px;
             background: var(--cell-bg);
             border: 2px solid var(--border);
             border-radius: 10px;
@@ -161,34 +183,30 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0px rgba(99, 102, 241, 0.6); }
+            0 { transform: scale(1); box-shadow: 0 0 0 0px rgba(99, 102, 241, 0.6); }
             100% { transform: scale(0.95); box-shadow: 0 0 0 8px rgba(99, 102, 241, 0.6); }
         }
 
-        .drop-section {
-            margin-top: 25px;
-            width: 100%;
+        .pakkam-vertical-container {
             display: flex;
             flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .drop-grid {
-            display: flex;
             gap: 10px;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 16px;
+            border: 2px solid var(--border);
+            width: 140px;
         }
 
-        .drop-cell-wrapper {
+        .pakkam-row {
             display: flex;
-            flex-direction: column;
             align-items: center;
-            width: 60px;
+            gap: 15px;
         }
 
-        .drop-cell {
-            width: 60px;
-            height: 60px;
+        .pakkam-cell {
+            width: 55px;
+            height: 55px;
             background: var(--cell-bg);
             border: 2px solid #475569;
             border-radius: 10px;
@@ -202,29 +220,37 @@
             transition: all 0.2s;
         }
 
-        .drop-cell.selectable {
+        .pakkam-cell.selectable {
             border-color: var(--success) !important;
             background: #064e3b !important;
             box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
         }
 
-        .drop-cell.used {
+        .pakkam-cell.used {
             text-decoration: line-through;
-            opacity: 0.3;
+            opacity: 0.25;
             background: #0f172a;
             cursor: not-allowed;
         }
 
-        .drop-label {
-            margin-top: 6px;
-            font-size: 0.75rem;
-            font-weight: 700;
+        .pakkam-letter {
+            font-size: 1.4rem;
+            font-weight: 800;
+            width: 25px;
             color: #94a3b8;
-            text-align: center;
         }
 
-        .power-label {
+        .pakkam-letter.power-type {
             color: var(--power);
+            text-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+        }
+
+        .grid-title {
+            text-align: center;
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: var(--primary);
+            margin-bottom: 8px;
         }
 
         .status-box {
@@ -366,18 +392,30 @@
 
     <header>
         <h1>AkkaM PakkaM</h1>
-        <p style="color: #94a3b8;">Place matching values around each other to score maximum links!</p>
+        <p style="color: #94a3b8;">Strategic Proximity Linker Engine</p>
     </header>
 
     <div class="container">
         <div class="game-board-side">
-            <div class="grid-wrapper">
-                <svg id="linkCanvas"></svg>
-                <div class="grid-container" id="grid"></div>
+            <div id="playerPanel" class="board-panel-wrapper">
+                <div class="grid-title" id="playerTitle">AKKAM</div>
+                <div class="grid-wrapper">
+                    <svg id="linkCanvas" class="linkCanvasClass"></svg>
+                    <div class="grid-container" id="grid"></div>
+                </div>
             </div>
 
-            <div class="drop-section">
-                <div class="drop-grid" id="dropGrid"></div>
+            <div id="pakkamWrapper">
+                <div class="grid-title">PAKKAM</div>
+                <div class="pakkam-vertical-container" id="pakkamGrid"></div>
+            </div>
+
+            <div id="optimumWrapper" class="board-panel-wrapper" style="display: none;">
+                <div class="grid-title" style="color: var(--optimum);">OPTIMUM ENGINE</div>
+                <div class="grid-wrapper" style="border-color: var(--optimum);">
+                    <svg id="optimumLinkCanvas" class="linkCanvasClass"></svg>
+                    <div class="grid-container" id="optimumGrid"></div>
+                </div>
             </div>
         </div>
 
@@ -395,39 +433,39 @@
             <button class="roll-btn" id="rollBtn" onclick="rollDice()">Roll Dice</button>
 
             <div class="powers-panel">
-                <h3>End-Game Powers</h3>
-                <button class="power-btn" id="btnPowerO" onclick="activatePower('O')" disabled>
-                    <span>O - Extra Space</span> <span id="statusO">Locked</span>
+                <h3>End-Game Powers Activation</h3>
+                <button class="power-btn" id="btnPowerA" onclick="activatePower('A')" disabled>
+                    <span>A - Add Space</span> <span id="statusA">Locked</span>
+                </button>
+                <button class="power-btn" id="btnPowerM" onclick="activatePower('M')" disabled>
+                    <span>M - Move / Swap</span> <span id="statusM">Locked</span>
                 </button>
                 <button class="power-btn" id="btnPowerR" onclick="activatePower('R')" disabled>
-                    <span>R - Replace Value</span> <span id="statusR">Locked</span>
-                </button>
-                <button class="power-btn" id="btnPowerS" onclick="activatePower('S')" disabled>
-                    <span>S - Swap Positions</span> <span id="statusS">Locked</span>
+                    <span>R - Replace Tile</span> <span id="statusR">Locked</span>
                 </button>
                 <button class="action-btn" id="btnFinish" onclick="endGame()" style="display:none; background:#059669; margin-top:5px;">
                     Calculate Final Score
                 </button>
-                <button class="action-btn" id="btnOptimum" onclick="showOptimumArrangement()" style="display:none; background:#7c3aed; margin-top:5px; box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);">
-                    ✨ Show Optimum Arrangement
+                <button class="action-btn" id="btnOptimum" onclick="showOptimumArrangement()" style="display:none; background:var(--optimum); margin-top:5px; box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);">
+                    ✨ Compare vs Optimum Board
                 </button>
             </div>
 
             <div class="score-box">
-                <div>Current Score Potential</div>
+                <div id="scoreBoxTitle">Current Score Potential</div>
                 <div class="score-total" id="liveScore">0</div>
                 <div class="score-breakdown" id="scoreBreakdown">No links yet.</div>
             </div>
 
             <div class="rules-modal">
-                <strong>Rules Checklist:</strong> Fill the drop slots sequentially from left to right. Once the main 5x5 grid fills up entirely, the game pauses to allow you to play any unlocked special end-game powers before sealing your score!
+                <strong>Smart Drop Enabled:</strong> Clicking *anywhere* on the Pakkam panel drops the rolled number directly into the lowest open spot automatically!
             </div>
         </div>
     </div>
 
     <script>
         let gridData = Array(5).fill(null).map(() => Array(5).fill(null));
-        let dropGridData = Array(5).fill(null);
+        let dropGridData = Array(5).fill(null); 
         let dropGridUsed = Array(5).fill(false); 
         let extraCells = []; 
         
@@ -436,10 +474,24 @@
         let activePower = null;    
         let powerSelections = [];  
         
-        const powersStatus = { O: 'Locked', R: 'Locked', S: 'Locked' };
+        let savedPlayerGrid = null;
+        let savedPlayerExtra = null;
+        let savedOptimumGrid = null;
+        let savedOptimumExtra = null;
+        
+        const powersStatus = { A: 'Locked', M: 'Locked', R: 'Locked' };
+        const pakkamLabels = ['A', 'M', 'R', 'S', 'S'];
 
-        function createGrid() {
-            const gridEl = document.getElementById('grid');
+        // Secure initialization layout trigger wrapped safely for structural mounting
+        document.addEventListener('DOMContentLoaded', () => {
+            renderBoardHTML('grid', gridData, extraCells);
+            createPakkamGrid();
+            updatePowerPanelUI();
+        });
+
+        function renderBoardHTML(targetGridId, dataSource, extraSource) {
+            const gridEl = document.getElementById(targetGridId);
+            if (!gridEl) return;
             gridEl.innerHTML = '';
 
             for (let r = 0; r < 7; r++) {
@@ -450,19 +502,21 @@
 
                     if (r >= 1 && r <= 5 && c >= 1 && c <= 5) {
                         cellEl.className = 'cell core';
-                        const coreR = r - 1;
-                        const coreC = c - 1;
-                        cellEl.innerText = gridData[coreR][coreC] || '';
-                        cellEl.onclick = () => handleCellClick(r, c);
+                        cellEl.innerText = dataSource[r-1][c-1] || '';
+                        if (gamePhase !== 'FINISHED' && targetGridId === 'grid') {
+                            cellEl.onclick = () => handleCellClick(r, c);
+                        }
                     } 
                     else if ((r === 0 || r === 6 || c === 0 || c === 6) && !((r===0||r===6) && (c===0||c===6))) {
                         cellEl.className = 'cell outer';
-                        const ext = extraCells.find(e => e.r === r && e.c === c);
+                        const ext = extraSource.find(e => e.r === r && e.c === c);
                         if (ext) {
                             cellEl.classList.add('filled');
                             cellEl.innerText = ext.val;
                         }
-                        cellEl.onclick = () => handleCellClick(r, c);
+                        if (gamePhase !== 'FINISHED' && targetGridId === 'grid') {
+                            cellEl.onclick = () => handleCellClick(r, c);
+                        }
                     } 
                     else {
                         cellEl.className = 'cell';
@@ -474,36 +528,32 @@
             }
         }
 
-        function createDropGrid() {
-            const dropEl = document.getElementById('dropGrid');
-            dropEl.innerHTML = '';
-            const labels = ['Drop 1', 'Drop 2', 'Power O', 'Power R', 'Power S'];
+        function createPakkamGrid() {
+            const container = document.getElementById('pakkamGrid');
+            if (!container) return;
+            container.innerHTML = '';
 
             for (let i = 0; i < 5; i++) {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'drop-cell-wrapper';
+                const row = document.createElement('div');
+                row.className = 'pakkam-row';
 
                 const cell = document.createElement('div');
-                cell.className = 'drop-cell';
-                cell.id = `drop-${i}`;
+                cell.className = 'pakkam-cell';
+                cell.id = `pakkam-${i}`;
                 cell.innerText = dropGridData[i] || '';
                 
                 if (dropGridUsed[i]) cell.classList.add('used');
-                
-                cell.onclick = () => handleDropGridClick(i);
+                cell.onclick = () => handlePakkamGridClick(i);
 
-                const label = document.createElement('div');
-                label.className = `drop-label ${i >= 2 ? 'power-label' : ''}`;
-                label.innerText = labels[i];
+                const letterLabel = document.createElement('div');
+                letterLabel.className = `pakkam-letter ${i < 3 ? 'power-type' : ''}`;
+                letterLabel.innerText = pakkamLabels[i];
 
-                wrapper.appendChild(cell);
-                wrapper.appendChild(label);
-                dropEl.appendChild(wrapper);
+                row.appendChild(cell);
+                row.appendChild(letterLabel);
+                container.appendChild(row);
             }
         }
-
-        createGrid();
-        createDropGrid();
 
         function updateStatus(msg) {
             document.getElementById('statusMessage').innerText = msg;
@@ -535,7 +585,7 @@
                     document.getElementById('diceSum').innerText = currentRoll;
 
                     gamePhase = 'PLACING';
-                    updateStatus(`Rolled ${currentRoll}! Place it inside the Core grid or use your next sequential drop slot.`);
+                    updateStatus(`Rolled ${currentRoll}! Assign it to Akkam grid or click anywhere on Pakkam to stack it at the bottom.`);
                 }
             }, 70);
         }
@@ -550,14 +600,38 @@
                 gridData[r-1][c-1] = currentRoll;
                 advanceTurn();
             } else if (gamePhase === 'POWERS_PHASE') {
-                if (activePower === 'O') {
-                    const cellEl = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
+                if (activePower === 'A') {
+                    const cellEl = document.querySelector(`#grid [data-r='${r}'][data-c='${c}']`);
                     if (!cellEl || !cellEl.classList.contains('valid-target')) return;
                     
                     powerSelections.push({r, c});
-                    updateStatus("Power O: Choose an unused number from your Drop Grid to fill this cell.");
-                    highlightAvailableDropCells();
+                    updateStatus("Power A: Select an active number from Pakkam to drop into this structural expansion space.");
+                    highlightAvailablePakkamCells();
                 } 
+                else if (activePower === 'M') {
+                    let val = getCellValue7x7(gridData, extraCells, r, c);
+                    
+                    if (powerSelections.length === 0) {
+                        if (val === null) return; 
+                        powerSelections.push({r, c});
+                        const cellEl = document.querySelector(`#grid [data-r='${r}'][data-c='${c}']`);
+                        cellEl.classList.add('selected');
+                        updateStatus("Power M: Now select the destination target cell (empty cell to move, filled cell to swap).");
+                    } else {
+                        const first = powerSelections[0];
+                        if (first.r === r && first.c === c) return;
+
+                        let val1 = getCellValue7x7(gridData, extraCells, first.r, first.c);
+                        let val2 = getCellValue7x7(gridData, extraCells, r, c);
+
+                        setCellValue7x7(gridData, extraCells, r, c, val1);
+                        setCellValue7x7(gridData, extraCells, first.r, first.c, val2);
+
+                        powersStatus.M = 'Used';
+                        cancelActivePowerState();
+                        executePostPowerRefresh();
+                    }
+                }
                 else if (activePower === 'R') {
                     if (r >= 1 && r <= 5 && c >= 1 && c <= 5) {
                         if (gridData[r-1][c-1] === null) return;
@@ -566,75 +640,52 @@
                     }
                     
                     powerSelections.push({r, c});
-                    const cellEl = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
+                    const cellEl = document.querySelector(`#grid [data-r='${r}'][data-c='${c}']`);
                     cellEl.classList.add('selected');
-                    updateStatus("Power R: Select an active value from the Drop Grid to swap in.");
-                    highlightAvailableDropCells();
-                } 
-                else if (activePower === 'S') {
-                    let val = getCellValue7x7(r, c);
-                    if (val === null) return;
-
-                    if (powerSelections.length === 0) {
-                        powerSelections.push({r, c});
-                        const cellEl = document.querySelector(`[data-r='${r}'][data-c='${c}']`);
-                        cellEl.classList.add('selected');
-                        updateStatus("Power S: Choose a second non-empty cell to swap positions.");
-                    } else {
-                        const first = powerSelections[0];
-                        if (first.r === r && first.c === c) return; 
-
-                        let val1 = getCellValue7x7(first.r, first.c);
-                        let val2 = getCellValue7x7(r, c);
-
-                        setCellValue7x7(first.r, first.c, val2);
-                        setCellValue7x7(r, c, val1);
-
-                        powersStatus.S = 'Used';
-                        cancelActivePowerState();
-                        executePostPowerRefresh();
-                    }
+                    updateStatus("Power R: Choose which number from Pakkam will overwrite this cell.");
+                    highlightAvailablePakkamCells();
                 }
             }
         }
 
-        function handleDropGridClick(index) {
+        function handlePakkamGridClick(clickedIndex) {
             if (gamePhase === 'PLACING') {
-                for (let i = 0; i < index; i++) {
+                let targetIndex = -1;
+                for (let i = 4; i >= 0; i--) {
                     if (dropGridData[i] === null) {
-                        alert(`Drop cells must be filled in sequence! Please fill 'Drop ${i + 1}' first.`);
-                        return;
+                        targetIndex = i;
+                        break;
                     }
                 }
                 
-                if (dropGridData[index] !== null) {
-                    alert("This drop slot is already filled!");
+                if (targetIndex === -1) {
+                    alert("Pakkam is completely full!");
                     return;
                 }
                 
-                dropGridData[index] = currentRoll;
+                dropGridData[targetIndex] = currentRoll;
                 
-                if (index === 2) powersStatus.O = 'Available';
-                if (index === 3) powersStatus.R = 'Available';
-                if (index === 4) powersStatus.S = 'Available';
+                if (targetIndex === 2) powersStatus.R = 'Available';
+                if (targetIndex === 1) powersStatus.M = 'Available';
+                if (targetIndex === 0) powersStatus.A = 'Available';
 
                 advanceTurn();
             } else if (gamePhase === 'POWERS_PHASE') {
-                if (dropGridData[index] === null || dropGridUsed[index]) return;
+                if (dropGridData[clickedIndex] === null || dropGridUsed[clickedIndex]) return;
 
-                if (activePower === 'O' && powerSelections.length === 1) {
+                if (activePower === 'A' && powerSelections.length === 1) {
                     const target = powerSelections[0];
-                    extraCells.push({ r: target.r, c: target.c, val: dropGridData[index] });
-                    dropGridUsed[index] = true;
-                    powersStatus.O = 'Used';
+                    extraCells.push({ r: target.r, c: target.c, val: dropGridData[clickedIndex] });
+                    dropGridUsed[clickedIndex] = true;
+                    powersStatus.A = 'Used';
                     
                     cancelActivePowerState();
                     executePostPowerRefresh();
                 } 
                 else if (activePower === 'R' && powerSelections.length === 1) {
                     const target = powerSelections[0];
-                    setCellValue7x7(target.r, target.c, dropGridData[index]);
-                    dropGridUsed[index] = true;
+                    setCellValue7x7(gridData, extraCells, target.r, target.c, dropGridData[clickedIndex]);
+                    dropGridUsed[clickedIndex] = true;
                     powersStatus.R = 'Used';
                     
                     cancelActivePowerState();
@@ -647,9 +698,9 @@
             currentRoll = null;
             document.getElementById('diceSum').innerText = '-';
             
-            createGrid();
-            createDropGrid();
-            calculateScore();
+            renderBoardHTML('grid', gridData, extraCells);
+            createPakkamGrid();
+            calculateAndDrawLinks('grid', 'linkCanvas', gridData, extraCells, true);
             updatePowerPanelUI();
 
             let isFull = true;
@@ -663,27 +714,28 @@
                 gamePhase = 'POWERS_PHASE';
                 document.getElementById('rollBtn').style.display = 'none';
                 document.getElementById('btnFinish').style.display = 'block';
-                updateStatus("The main grid is FULL! Powers Phase activated. Use any unlocked powers, then click 'Calculate Final Score'.");
+                updateStatus("Akkam grid is full! Powers Phase active. Trigger any available powers, then seal your final layout.");
             } else {
                 gamePhase = 'ROLLING';
                 document.getElementById('rollBtn').disabled = false;
-                updateStatus("Number placed. Click 'Roll Dice' for your next turn.");
+                updateStatus("Turn tracked. Roll dice to continue.");
             }
         }
 
         function updatePowerPanelUI() {
-            const btnO = document.getElementById('btnPowerO');
+            const btnA = document.getElementById('btnPowerA');
+            const btnM = document.getElementById('btnPowerM');
             const btnR = document.getElementById('btnPowerR');
-            const btnS = document.getElementById('btnPowerS');
+            if(!btnA || !btnM || !btnR) return;
 
-            btnO.disabled = powersStatus.O !== 'Available';
-            document.getElementById('statusO').innerText = powersStatus.O;
+            btnA.disabled = powersStatus.A !== 'Available';
+            document.getElementById('statusA').innerText = powersStatus.A;
             
+            btnM.disabled = powersStatus.M !== 'Available';
+            document.getElementById('statusM').innerText = powersStatus.M;
+
             btnR.disabled = powersStatus.R !== 'Available';
             document.getElementById('statusR').innerText = powersStatus.R;
-
-            btnS.disabled = powersStatus.S !== 'Available';
-            document.getElementById('statusS').innerText = powersStatus.S;
         }
 
         function activatePower(powerType) {
@@ -699,13 +751,13 @@
 
             document.getElementById(`btnPower${powerType}`).classList.add('active');
 
-            if (powerType === 'O') {
-                updateStatus("Power O Active: Click a highlighted edge space along the outer perimeter.");
+            if (powerType === 'A') {
+                updateStatus("Power A Active: Select an edge boundary slot along the exterior perimeter.");
                 highlightValidOuterSlots();
+            } else if (powerType === 'M') {
+                updateStatus("Power M Active: Click the grid tile you want to relocate.");
             } else if (powerType === 'R') {
-                updateStatus("Power R Active: Choose any number tile inside the grid to replace.");
-            } else if (powerType === 'S') {
-                updateStatus("Power S Active: Click the first number cell you want to swap.");
+                updateStatus("Power R Active: Select the tile inside the grid that you wish to replace.");
             }
         }
 
@@ -715,13 +767,13 @@
             }
             activePower = null;
             powerSelections = [];
-            createGrid();
-            createDropGrid();
-            calculateScore(); 
+            renderBoardHTML('grid', gridData, extraCells);
+            createPakkamGrid();
+            calculateAndDrawLinks('grid', 'linkCanvas', gridData, extraCells, true); 
         }
 
         function highlightValidOuterSlots() {
-            const cells = document.querySelectorAll('.cell.outer:not(.filled)');
+            const cells = document.querySelectorAll('#grid .cell.outer:not(.filled)');
             cells.forEach(cell => {
                 const r = parseInt(cell.dataset.r);
                 const c = parseInt(cell.dataset.c);
@@ -741,45 +793,54 @@
             });
         }
 
-        function highlightAvailableDropCells() {
+        function highlightAvailablePakkamCells() {
             for (let i = 0; i < 5; i++) {
                 if (dropGridData[i] !== null && !dropGridUsed[i]) {
-                    document.getElementById(`drop-${i}`).classList.add('selectable');
+                    document.getElementById(`pakkam-${i}`).classList.add('selectable');
                 }
             }
         }
 
         function executePostPowerRefresh() {
-            createGrid();
-            createDropGrid();
-            calculateScore();
+            renderBoardHTML('grid', gridData, extraCells);
+            createPakkamGrid();
+            calculateAndDrawLinks('grid', 'linkCanvas', gridData, extraCells, true);
             updatePowerPanelUI();
         }
 
-        function getCellValue7x7(r, c) {
+        function getCellValue7x7(coreSrc, extraSrc, r, c) {
             if (r >= 1 && r <= 5 && c >= 1 && c <= 5) {
-                return gridData[r-1][c-1];
+                return coreSrc[r-1][c-1];
             } else {
-                const match = extraCells.find(e => e.r === r && e.c === c);
+                const match = extraSrc.find(e => e.r === r && e.c === c);
                 return match ? match.val : null;
             }
         }
 
-        function setCellValue7x7(r, c, val) {
+        function setCellValue7x7(coreSrc, extraSrc, r, c, val) {
             if (r >= 1 && r <= 5 && c >= 1 && c <= 5) {
-                gridData[r-1][c-1] = val;
+                coreSrc[r-1][c-1] = val;
             } else {
-                const match = extraCells.find(e => e.r === r && e.c === c);
-                if (match) match.val = val;
+                const match = extraSrc.find(e => e.r === r && e.c === c);
+                if (match) {
+                    if (val === null) {
+                        let idx = extraSrc.findIndex(e => e.r === r && e.c === c);
+                        extraSrc.splice(idx, 1);
+                    } else {
+                        match.val = val;
+                    }
+                } else if (val !== null) {
+                    extraSrc.push({ r, c, val });
+                }
             }
         }
 
-        function calculateScore() {
+        function calculateAndDrawLinks(gridId, canvasId, coreSrc, extraSrc, updateScorePanel = false) {
             let nodes = [];
 
             for (let r = 0; r < 7; r++) {
                 for (let c = 0; c < 7; c++) {
-                    let val = getCellValue7x7(r, c);
+                    let val = getCellValue7x7(coreSrc, extraSrc, r, c);
                     if (val !== null) {
                         nodes.push({ r, c, val });
                     }
@@ -787,10 +848,13 @@
             }
 
             let linksCountByValue = {};
-            const svg = document.getElementById('linkCanvas');
+            const svg = document.getElementById(canvasId);
+            if (!svg) return 0;
             svg.innerHTML = ''; 
             
-            const gridRect = document.getElementById('grid').getBoundingClientRect();
+            const gridEl = document.getElementById(gridId);
+            if (!gridEl) return 0;
+            const gridRect = gridEl.getBoundingClientRect();
 
             for (let i = 0; i < nodes.length; i++) {
                 for (let j = i + 1; j < nodes.length; j++) {
@@ -798,17 +862,14 @@
                     const n2 = nodes[j];
 
                     if (n1.val === n2.val) {
-                        const rowDiff = Math.abs(n1.r - n2.r);
-                        const colDiff = Math.abs(n1.c - n2.c);
-
-                        if (rowDiff <= 1 && colDiff <= 1) {
+                        if (Math.abs(n1.r - n2.r) <= 1 && Math.abs(n1.c - n2.c) <= 1) {
                             if (!linksCountByValue[n1.val]) {
                                 linksCountByValue[n1.val] = 0;
                             }
                             linksCountByValue[n1.val]++;
 
-                            const el1 = document.querySelector(`[data-r='${n1.r}'][data-c='${n1.c}']`);
-                            const el2 = document.querySelector(`[data-r='${n2.r}'][data-c='${n2.c}']`);
+                            const el1 = gridEl.querySelector(`[data-r='${n1.r}'][data-c='${n1.c}']`);
+                            const el2 = gridEl.querySelector(`[data-r='${n2.r}'][data-c='${n2.c}']`);
                             
                             if (el1 && el2) {
                                 const r1 = el1.getBoundingClientRect();
@@ -824,7 +885,7 @@
                                 line.setAttribute('y1', y1);
                                 line.setAttribute('x2', x2);
                                 line.setAttribute('y2', y2);
-                                line.setAttribute('stroke', '#22d3ee'); /* Vibrant Neon Cyan Links */
+                                line.setAttribute('stroke', canvasId === 'optimumLinkCanvas' ? '#a78bfa' : '#22d3ee'); 
                                 line.setAttribute('stroke-width', '4');
                                 line.setAttribute('stroke-linecap', 'round');
                                 line.setAttribute('opacity', '0.85');
@@ -845,45 +906,47 @@
                 breakdownHtml += `<div><strong>Value ${value}:</strong> ${count} link(s) × ${value} = ${points} pts</div>`;
             });
 
-            document.getElementById('liveScore').innerText = totalScore;
-            document.getElementById('scoreBreakdown').innerHTML = breakdownHtml || 'No identical adjacent links detected yet.';
+            if (updateScorePanel) {
+                document.getElementById('liveScore').innerText = totalScore;
+                document.getElementById('scoreBreakdown').innerHTML = breakdownHtml || 'No adjacent match links compiled yet.';
+            }
             
             return totalScore;
         }
 
         function endGame() {
             gamePhase = 'FINISHED';
-            const finalScore = calculateScore();
             
-            document.getElementById('btnPowerO').disabled = true;
+            savedPlayerGrid = JSON.parse(JSON.stringify(gridData));
+            savedPlayerExtra = JSON.parse(JSON.stringify(extraCells));
+            
+            const finalScore = calculateAndDrawLinks('grid', 'linkCanvas', savedPlayerGrid, savedPlayerExtra, true);
+            
+            document.getElementById('btnPowerA').disabled = true;
+            document.getElementById('btnPowerM').disabled = true;
             document.getElementById('btnPowerR').disabled = true;
-            document.getElementById('btnPowerS').disabled = true;
             document.getElementById('btnFinish').style.display = 'none';
-            
-            // Reveal the Optimum Arrangement Option Button
             document.getElementById('btnOptimum').style.display = 'block';
             
-            updateStatus(`🏆 Game Over! Final Score: ${finalScore} points. Click below to reveal the mathematically optimal grid layout for these numbers!`);
+            updateStatus(`🏆 Match Finalized! Your board calculated a total of ${finalScore} points. Hit the comparison tracker down below!`);
         }
 
-        /* HEURISTIC GRID OPTIMIZATION ENGINE
-           Uses a multi-start Stochastic Hill Climbing framework to find the 
-           absolute best global link configurations in fractions of a millisecond.
-        */
         function showOptimumArrangement() {
-            // Step 1: Collect coordinates of all active board spots
+            savedOptimumGrid = JSON.parse(JSON.stringify(savedPlayerGrid));
+            savedOptimumExtra = JSON.parse(JSON.stringify(savedPlayerExtra));
+
             let fixedGridPositions = [];
             for (let r = 0; r < 7; r++) {
                 for (let c = 0; c < 7; c++) {
-                    if (getCellValue7x7(r, c) !== null) {
-                        fixedGridPositions.push({ r, c, val: getCellValue7x7(r, c) });
+                    let val = getCellValue7x7(savedOptimumGrid, savedOptimumExtra, r, c);
+                    if (val !== null) {
+                        fixedGridPositions.push({ r, c, val });
                     }
                 }
             }
 
             if (fixedGridPositions.length === 0) return;
 
-            // Internal evaluation layer for scoring combinations
             function evaluatePermutation(arr) {
                 let score = 0;
                 let linksByVal = {};
@@ -905,11 +968,9 @@
             let bestArrangement = fixedGridPositions.map(p => ({...p}));
             let bestScore = evaluatePermutation(bestArrangement);
 
-            // Run 30 random optimization restarts to evade mathematical local minima traps
-            for (let restart = 0; restart < 30; restart++) {
+            for (let restart = 0; restart < 40; restart++) {
                 let currentArrangement = fixedGridPositions.map(p => ({...p}));
                 
-                // Shuffle numbers across fixed open positions
                 for (let i = currentArrangement.length - 1; i > 0; i--) {
                     const j = Math.floor(Math.random() * (i + 1));
                     let temp = currentArrangement[i].val;
@@ -923,7 +984,6 @@
                     bestArrangement = currentArrangement.map(p => ({...p}));
                 }
 
-                // Steepest Hill Climb refinement
                 let localOptimizationFound = true;
                 let safetyTicks = 0;
                 while (localOptimizationFound && safetyTicks < 400) {
@@ -931,7 +991,6 @@
                     safetyTicks++;
                     for (let i = 0; i < currentArrangement.length; i++) {
                         for (let j = i + 1; j < currentArrangement.length; j++) {
-                            // Test structural value swap
                             let temp = currentArrangement[i].val;
                             currentArrangement[i].val = currentArrangement[j].val;
                             currentArrangement[j].val = temp;
@@ -945,7 +1004,6 @@
                                     bestArrangement = currentArrangement.map(p => ({...p}));
                                 }
                             } else {
-                                // Undo swap optimization test
                                 currentArrangement[j].val = currentArrangement[i].val;
                                 currentArrangement[i].val = temp;
                             }
@@ -954,20 +1012,41 @@
                 }
             }
 
-            // Remap optimized arrangement solutions directly back into variables
             bestArrangement.forEach(node => {
-                setCellValue7x7(node.r, node.c, node.val);
+                setCellValue7x7(savedOptimumGrid, savedOptimumExtra, node.r, node.c, node.val);
             });
 
-            // Re-render visual layers
-            createGrid();
-            calculateScore();
-            
+            // TRANSFORMATION STAGE: Swap out columns safely
+            document.getElementById('pakkamWrapper').style.display = 'none';
+            document.getElementById('playerTitle').innerText = "YOUR FINAL BOARD";
+            document.getElementById('optimumWrapper').style.display = 'block';
+
+            // Independent physical structural node renders
+            renderBoardHTML('grid', savedPlayerGrid, savedPlayerExtra);
+            renderBoardHTML('optimumGrid', savedOptimumGrid, savedOptimumExtra);
+
+            // Force browser layout repaint to establish accurate canvas rendering bounding vectors
+            setTimeout(() => {
+                const pScore = calculateAndDrawLinks('grid', 'linkCanvas', savedPlayerGrid, savedPlayerExtra, false);
+                const oScore = calculateAndDrawLinks('optimumGrid', 'optimumLinkCanvas', savedOptimumGrid, savedOptimumExtra, false);
+
+                document.getElementById('scoreBoxTitle').innerText = "Match Conclusion Score Results";
+                document.getElementById('liveScore').innerHTML = `<span style="color:#22d3ee">${pScore}</span> <span style="color:#94a3b8; font-size:1.2rem;">vs</span> <span style="color:var(--optimum)">${oScore}</span>`;
+                document.getElementById('scoreBreakdown').innerHTML = `<div>Your Arrangement yielded <strong>${pScore} pts</strong>. The AI Engine optimized the exact same numbers to yield <strong>${oScore} pts</strong>.</div>`;
+            }, 50);
+
             document.getElementById('btnOptimum').style.display = 'none';
-            updateStatus(`✨ Optimum Layout Configured! The maximum mathematically achievable score for your precise tile pool is ${bestScore} points.`);
+            updateStatus(`✨ Comparison Matrix active! Compare your layout configurations alongside the algorithmic optimal matrix generated by the machine.`);
         }
 
-        window.addEventListener('resize', calculateScore);
+        window.addEventListener('resize', () => {
+            if (gamePhase === 'FINISHED' && savedOptimumGrid !== null) {
+                calculateAndDrawLinks('grid', 'linkCanvas', savedPlayerGrid, savedPlayerExtra, false);
+                calculateAndDrawLinks('optimumGrid', 'optimumLinkCanvas', savedOptimumGrid, savedOptimumExtra, false);
+            } else {
+                calculateAndDrawLinks('grid', 'linkCanvas', gridData, extraCells, true);
+            }
+        });
     </script>
 </body>
 </html>
